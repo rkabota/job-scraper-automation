@@ -20,16 +20,11 @@ jobs:
       - name: Install Chrome & ChromeDriver
         run: |
           sudo apt update
-          sudo apt install -y wget unzip curl chromium-browser
+          sudo apt install -y wget unzip curl chromium-browser chromium-chromedriver
           
-          # Get latest ChromeDriver version
-          LATEST_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
-          wget -O chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/$LATEST_VERSION/linux64/chromedriver-linux64.zip
-          
-          # Extract and move ChromeDriver to the correct location
-          unzip chromedriver.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
+          # Ensure ChromeDriver is properly linked
+          sudo ln -sf /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+          sudo chmod +x /usr/bin/chromedriver
 
       - name: Run Job Scraper
         env:
