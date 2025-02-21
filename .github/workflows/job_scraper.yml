@@ -1,0 +1,44 @@
+name: Automated Job Scraper
+
+on:
+  schedule:
+    - cron: "0 12 * * *"  # Runs every day at 12 PM UTC (adjust if needed)
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          pip install selenium
+          sudo apt update
+          sudo apt install -y wget unzip chromium-chromedriver
+          wget -O chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/133.0.6943.126/linux64/chromedriver-linux64.zip
+          unzip chromedriver.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/bin/chromedriver
+          sudo chmod +x /usr/bin/chromedriver
+
+      - name: Run Job Scraper
+        run: python job_scraper.py
+
+      - name: Send Email Notification (Optional)
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Daily Job Scraper Report"
+          body: "Attached is today’s job scrape results."
+          to: "akabota@gmail.com"
+          from: "Job Scraper Bot"
+          attachments: "scraper_output.txt"
