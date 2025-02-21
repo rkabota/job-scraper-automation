@@ -17,15 +17,26 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Dependencies
+      - name: Install Chrome & ChromeDriver
         run: |
-          pip install selenium
           sudo apt update
-          sudo apt install -y wget unzip chromium-browser chromium-chromedriver
-          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
+          sudo apt install -y wget unzip curl chromium-browser
+          
+          # Get latest ChromeDriver version
+          LATEST_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)
+          wget -O chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/$LATEST_VERSION/linux64/chromedriver-linux64.zip
+          
+          # Extract and move ChromeDriver to the correct location
+          unzip chromedriver.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
 
       - name: Run Job Scraper
-        run: python job_scraper.py
+        env:
+          DISPLAY: ":99"
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          python job_scraper.py
 
       - name: Send Email Notification (Optional)
         uses: dawidd6/action-send-mail@v3
